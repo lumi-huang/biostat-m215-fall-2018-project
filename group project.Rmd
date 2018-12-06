@@ -1,0 +1,24 @@
+---
+title: "group project"
+author: "Lumi Huang"
+date: "11/19/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(dplyr)
+```
+
+```{r}
+breast <- read_csv(file = "./seer_breast.csv")
+#breast <- as.data.frame.list(breast)
+dim(breast)
+breast_ca <- breast %>% filter(REG == '0000001541'| REG == '0000001501'| REG == '0000001531' | REG == '0000001535')
+dim(breast_ca)
+```

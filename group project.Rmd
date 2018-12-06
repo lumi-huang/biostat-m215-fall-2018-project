@@ -15,34 +15,56 @@ library(tidyverse)
 library(dplyr)
 ```
 
-```{r}
-breast <- read_csv(file = "./seer_breast.csv")
-#breast <- as.data.frame.list(breast)
-dim(breast)
-breast_ca <- breast %>% 
-  filter(REG == '0000001541'| REG == '0000001501'| REG == '0000001531' | REG == '0000001535') %>%
-  filter(YEAR_DX == 2014)
-dim(breast_ca)
-```
-
 Variables of interest:
 STAT_REC = Vital status recode (study cutoff used)  censoring indicators!
-VSRTSADX  = SEER cause of death classification    censoring indicators?
-ODTHCLASS = SEER other cause of death classification
+VSRTSADX  = SEER cause of death classification    censoring indicators
 SRV_TIME_MON = Survival months survival time? not sure the difference between the 2
 SRV_TIME_MON_FLAG = Survival months flag
 AGE_DX = Age at diagnosis
 MDXRECMP = Month of diagnosis                  
-YEAR_DX = Year of diagnosis
 MALIGCOUNT = Total number of in situ/malignant tumors for patient       
 BENBORDCOUNT = Total number of benign/borderline tumors for patient
 RACE1V = Race/ethnicity
 SEX = Sex
 EOD10_PN = positive lymph nodes examined
 CODPUB = Cause of death to SEER site recode
+
 ```{r}
-breast_data <- breast_ca %>% 
-  select(STAT_REC, VSRTSADX, ODTHCLASS, SRV_TIME_MON, SRV_TIME_MON_FLAG,
-         AGE_DX, MDXRECMP, YEAR_DX, MALIGCOUNT, BENBORDCOUNT, RACE1V, SEX,
-         EOD10_PN, CODPUB)
+breast <- read_csv(file = "./seer_breast.csv")
+dim(breast)
+breast_ca <- breast %>% 
+  filter(REG == '0000001541'& YEAR_DX == 2014)
+dim(breast_ca)
+
+#drop region and year
+breast_ca <- breast_ca %>% select(-REG, -YEAR_DX)
+dim(breast_ca)
+
+#filter the data so that we only look at those who die from breast cancer and those who survive till the end of the study
+breast_ca <- breast_ca %>%
+  filter((VSRTSADX == 0 & STAT_REC == 1) | VSRTSADX == 1)
+
+#create new death indicator delta: delta = 0 alive till the end of the study, 1 = die from breast cancer
+breast_ca$delta <- ifelse(breast_ca$VSRTSADX == 1, 1, 0)
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+library(survival)
+library(ncvreg)
+```
+
+Lasso
+```{r}
+lasso.fit <- ncvsurv(X, Surv(survtime, delta), penalty = "lasso", nlambda = 25) lasso.bic <- AIC(lasso.fit, k = log(n))
+lasso.est <- lasso.fit$beta[, which.min(lasso.bic)]
+wt <- 1 / abs(coxph(Surv(survtime, delta) ~ X)$coefficient)
+alasso.fit <- ncvsurv(X, Surv(survtime, delta), penalty = "lasso", nlambda = 25, penalty.factor = wt)
+alasso.bic <- AIC(alasso.fit, k = log(n))
+alasso.est <- alasso.fit$beta[, which.min(alasso.bic)]
 ```

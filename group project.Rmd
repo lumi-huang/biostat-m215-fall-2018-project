@@ -19,6 +19,30 @@ library(dplyr)
 breast <- read_csv(file = "./seer_breast.csv")
 #breast <- as.data.frame.list(breast)
 dim(breast)
-breast_ca <- breast %>% filter(REG == '0000001541'| REG == '0000001501'| REG == '0000001531' | REG == '0000001535')
+breast_ca <- breast %>% 
+  filter(REG == '0000001541'| REG == '0000001501'| REG == '0000001531' | REG == '0000001535') %>%
+  filter(YEAR_DX == 2014)
 dim(breast_ca)
+```
+
+Variables of interest:
+STAT_REC = Vital status recode (study cutoff used)  censoring indicators!
+VSRTSADX  = SEER cause of death classification    censoring indicators?
+ODTHCLASS = SEER other cause of death classification
+SRV_TIME_MON = Survival months survival time? not sure the difference between the 2
+SRV_TIME_MON_FLAG = Survival months flag
+AGE_DX = Age at diagnosis
+MDXRECMP = Month of diagnosis                  
+YEAR_DX = Year of diagnosis
+MALIGCOUNT = Total number of in situ/malignant tumors for patient       
+BENBORDCOUNT = Total number of benign/borderline tumors for patient
+RACE1V = Race/ethnicity
+SEX = Sex
+EOD10_PN = positive lymph nodes examined
+CODPUB = Cause of death to SEER site recode
+```{r}
+breast_data <- breast_ca %>% 
+  select(STAT_REC, VSRTSADX, ODTHCLASS, SRV_TIME_MON, SRV_TIME_MON_FLAG,
+         AGE_DX, MDXRECMP, YEAR_DX, MALIGCOUNT, BENBORDCOUNT, RACE1V, SEX,
+         EOD10_PN, CODPUB)
 ```

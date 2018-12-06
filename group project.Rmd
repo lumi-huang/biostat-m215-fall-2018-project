@@ -46,6 +46,15 @@ breast_ca <- breast_ca %>%
 
 #create new death indicator delta: delta = 0 alive till the end of the study, 1 = die from breast cancer
 breast_ca$delta <- ifelse(breast_ca$VSRTSADX == 1, 1, 0)
+
+#create new variable stage: stage 0 - 4
+breast_ca <- breast_ca %>%
+  mutate(stage = recode(DAJCC7STG, "120" = 1, "000" = 0, "320" = 2, "520" = 3, "999" = 9, "330" = 2,
+                        "700" = 4, "150" = 1, "540" = 3, "530" = 3, "888" = 9, "510" = 3))
+#drop stage = NA
+breast_ca <- breast_ca %>% filter(stage != 9)
+
+
 ```
 
 

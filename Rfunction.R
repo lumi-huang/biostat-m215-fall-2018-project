@@ -14,7 +14,7 @@ single.cox = function(time, event, covariate, co.type) {
       formul = paste("surv.sub ~ factor(covariate[,", i, "])", sep="")
       fit = coxph(eval(parse(text=formul)), ties = "breslow")
     }
-    p = rbind(p, t(summary(fit)$logtest)) # LRT
+    p = rbind(p, t(round(summary(fit)$logtest, 3))) # LRT
   }
   
   return(p)

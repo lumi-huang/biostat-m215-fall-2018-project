@@ -13,21 +13,22 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(dplyr)
+library(survival)
+library(ncvreg)
 ```
 
 Variables of interest:
 STAT_REC = Vital status recode (study cutoff used)  censoring indicators!
 VSRTSADX  = SEER cause of death classification    censoring indicators
-SRV_TIME_MON = Survival months survival time? not sure the difference between the 2
-SRV_TIME_MON_FLAG = Survival months flag
+SRV_TIME_MON = Survival months survival time
 AGE_DX = Age at diagnosis
-MDXRECMP = Month of diagnosis                  
 MALIGCOUNT = Total number of in situ/malignant tumors for patient       
 BENBORDCOUNT = Total number of benign/borderline tumors for patient
-RACE1V = Race/ethnicity
+RAC_RECY = race
 SEX = Sex
+BRST_SUB = BREAST SUBTYPE
 EOD10_PN = positive lymph nodes examined
-CODPUB = Cause of death to SEER site recode
+MAR_STAT = marital status at dx
 
 ```{r}
 breast <- read_csv(file = "./seer_breast.csv")
@@ -54,19 +55,46 @@ breast_ca <- breast_ca %>%
 #drop stage = NA
 breast_ca <- breast_ca %>% filter(stage != 9)
 
+#drop race = unknown
+breast_ca <- breast_ca %>% filter(RAC_RECY != 9)
+
+#drop brest subtype = unknown (5)
+breast_ca <- breast_ca %>% filter(BRST_SUB != 5)
+
+#drop unknown survival time months (9999)
+breast_ca <- breast_ca %>% filter(SRV_TIME_MON != 9999)
+
+#drop age unknown (999)
+breast_ca <- breast_ca %>% filter(AGE_DX != 999)
+
+#drop unknown MAR_STAT = 9
+breast_ca <- breast_ca %>% filter(MAR_STAT != 9)
+
+#drop unknown MALIGCOUNT = 99 BENBORDCOUNT = 99
+breast_ca <- breast_ca %>% filter(MALIGCOUNT != 99)
+breast_ca <- breast_ca %>% filter(BENBORDCOUNT != 99)
+
+
 
 ```
 
+
+variables:
+delta: death indicator
+SRV_TIME_MON = Survival months survival time
+SEX = Sex
+RAC_RECY = race
+MAR_STAT = marital status at dx
+BRST_SUB = BREAST SUBTYPE
+MALIGCOUNT = Total number of in situ/malignant tumors for patient       
+BENBORDCOUNT = Total number of benign/borderline tumors for patient
 
 ```{r}
 
 ```
 
 
-```{r}
-library(survival)
-library(ncvreg)
-```
+
 
 Lasso
 ```{r}

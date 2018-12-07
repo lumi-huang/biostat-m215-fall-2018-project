@@ -106,5 +106,5 @@ mcp.est <- mcp.fit$beta[, which.min(mcp.bic)]
 Results
 ```{r}
 beta.est <- round(cbind(lasso.est, scad.est, mcp.est), 4)
-beta.est
+print(beta.est)
 ```

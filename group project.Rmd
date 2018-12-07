@@ -89,8 +89,7 @@ save an RDS file with the following covariates (for easier access later):
 breast_final <- breast_ca %>%
   select(stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, YR_BRTH,
          MAR_STAT, MALIGCOUNT, BENBORDCOUNT)
-  
-
+saveRDS(breast_final, file = "breast_final.rds")  
 ```
 
 

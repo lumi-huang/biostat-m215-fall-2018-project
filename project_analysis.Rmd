@@ -25,15 +25,18 @@ breast_ca <- readRDS(file = "breast_final.rds")
 ## Variable selection
 
 variables:
-delta: death indicator
-SRV_TIME_MON = Survival months survival time
-SEX = Sex
-RAC_RECY = race
-MAR_STAT = marital status at dx
-BRST_SUB = BREAST SUBTYPE
-MALIGCOUNT = Total number of in situ/malignant tumors for patient       
-BENBORDCOUNT = Total number of benign/borderline tumors for patient
 
+- stage: cancer stage
+- delta: death indicator
+- SRV_TIME_MON = Survival months survival time
+- SEX = Sex
+- RAC_RECY = race
+- MAR_STAT = marital status at dx
+- BRST_SUB = BREAST SUBTYPE
+- AGE_DX = age at diagnosis
+- YR_BRTH = year of birth
+- MALIGCOUNT = Total number of in situ/malignant tumors for patient       
+- BENBORDCOUNT = Total number of benign/borderline tumors for patient
 
 ```{r}
 source("Rfunction.R")

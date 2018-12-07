@@ -15,7 +15,6 @@ library(dplyr)
 library(survival)
 library(ncvreg)
 library(dummies)
-
 ```
 
 Import data

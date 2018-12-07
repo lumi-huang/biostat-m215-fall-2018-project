@@ -21,22 +21,19 @@ Import data:
 breast <- readRDS(file = "breast_final.rds")
 ```
 
-## Cox Model
+## Cox Model: All Covariates
 
 Using the Breslow method of handling ties, we fit a Cox proportional hazards model to the data including all 13 covariates: race, sex, stage, breast subtype, age dx, age, marital status, benign tumor count, malignant tumor count, primary site, pr status, er status, insurance status.
 
 ```{r}
-fit <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(stage) + factor(RAC_RECY) + 
-             factor(SEX) + factor(BRST_SUB) + AGE_DX + Age + factor(MAR_STAT) + 
-             MALIGCOUNT + BENBORDCOUNT + factor(PRIMSITE) + factor(ERSTATUS) +
-             factor(PRSTATUS) + factor(INSREC_PUB), 
-             data = breast, ties = "breslow" )
-
-#summary(fit)
-
+fit <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(SEX) + factor(stage) + factor(RAC_RECY) + 
+             factor(BRST_SUB) + AGE_DX + Age + factor(MAR_STAT) + MALIGCOUNT + 
+             BENBORDCOUNT + factor(PRIMSITE) + factor(ERSTATUS) + factor(PRSTATUS) + 
+             factor(INSREC_PUB), data = breast, ties = "breslow" )
+summary(fit)
 ```
 
-## ANOVA Table
+## ANOVA Table: All Covariates
 
 We constructed an Analysis of Variance table to summarize estimates of the risk coefficients and the results of the one degree of freedom tests for each covariate in the model:
 ```{r}
@@ -45,4 +42,28 @@ kable(anova_table, "latex", booktabs = T,
       col.names = c("Coefficient", "Exp. Coeff.", "Std. Error", "Z-Score", "P-Value")) %>%
   kable_styling(latex_options = c("striped", "HOLD_position"))
 ```
+
+## Cox Model: Top 9 Significant Variables
+Using variable selection methods (LASSO, SCAD, MCP), we decided the top 9 significant variables were: 
+
+- Stage
+- ERSTATUS
+- PRSTATUS
+- MALIGCOUNT
+- RAC_RECY
+- PRIMSITE
+- BRST_SUB
+- MAR_STAT
+- AGE_DX
+
+We fit a Cox model with these covariates plus sex:
+```{r}
+fit2 <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(SEX) + factor(stage) + factor(RAC_RECY) + 
+             factor(BRST_SUB) + AGE_DX + factor(MAR_STAT) + MALIGCOUNT + factor(PRIMSITE) + 
+             factor(ERSTATUS) + factor(PRSTATUS) , data = breast, ties = "breslow" )
+summary(fit2)
+```
+
+
+
 

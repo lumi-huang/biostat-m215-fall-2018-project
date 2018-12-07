@@ -77,7 +77,7 @@ breast_ca <- breast_ca %>% filter(BENBORDCOUNT != 99)
 #transform character variables into numeric
 breast_ca$MALIGCOUNT <- as.numeric(breast_ca$MALIGCOUNT)
 breast_ca$BENBORDCOUNT <- as.numeric(breast_ca$BENBORDCOUNT)
-
+breast_ca$SRV_TIME_MON <- as.numeric(breast_ca$SRV_TIME_MON)
 
 ```
 
@@ -93,27 +93,10 @@ MALIGCOUNT = Total number of in situ/malignant tumors for patient
 BENBORDCOUNT = Total number of benign/borderline tumors for patient
 
 ```{r}
-single.cox = function(time, event, covariate, co.type) {
-  
-  p = c()
-  
-  for (i in 1:ncol(covariate)){
-    surv.sub = Surv(time=time, event=event, type="right")
-    if (co.type[i]=="N") { # continuous variable
-      formul = paste("surv.sub ~ covariate[,", i, "]", sep="")
-      fit = coxph(eval(parse(text=formul)), ties = "breslow")
-    } else { # categorical variable
-      formul = paste("surv.sub ~ factor(covariate[,", i, "])", sep="")
-      fit = coxph(eval(parse(text=formul)), ties = "breslow")
-    }
-    p = rbind(p, t(round(summary(fit)$logtest, 3))) # LRT
-  }
-  
-  return(p)
-  
-}
+setwd(".")
+source("Rfunction.R")
 
-single.cox(breast_ca$SRV_TIME_MON, breast_ca$delta, breast_ca$MALIGCOUNT, N)
+single.cox(breast_ca$SRV_TIME_MON, breast_ca$delta, as.data.frame(breast_ca[, c("MALIGCOUNT", "RAC_RECY")]), c("N","C"))
 ```
 
 

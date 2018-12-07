@@ -22,6 +22,9 @@ breast <- readRDS(file = "breast_final.rds")
 
 # delete all survival time = 0
 breast <- subset(breast, SRV_TIME_MON != 0)
+
+# convert SEX to dummy: 0=male, 1=female
+breast$SEX <- ifelse(breast$SEX == 1, 0, 1)
 ```
 
 ## Cox Model: All Covariates
@@ -84,6 +87,36 @@ breast2$tdc_sex <- breast2$SEX * log(breast2$SRV_TIME_MON)
 coxph(Surv(t0, SRV_TIME_MON, delta) ~ SEX + tdc_sex, data = breast2, ties = "breslow")
 ```
 
-Using $g(t)=\ln(t)$, the Wald p-value for the test of $H_0:\beta_2=0$ is 0.0091, which is significant at $\alpha=0.05$. Thus, there is evidence that `SEX` covariate has nonproportional hazards.
+Using $g(t)=\ln(t)$, the Wald p-value for the test of $H_0:\beta_2=0$ is 0.0044, which is significant at $\alpha=0.05$. Thus, there is evidence that `SEX` covariate has nonproportional hazards. Therefore, we should stratify on Sex.
+
+## Stratify on Sex
+
+Fix Cox model with the top 9 covariates, stratified on `SEX`.
+
+```{r}
+fit3 <- coxph(Surv(SRV_TIME_MON, delta) ~ strata(SEX) + factor(stage) + factor(RAC_RECY) + 
+             factor(BRST_SUB) + factor(MAR_STAT) + MALIGCOUNT + factor(PRIMSITE) + 
+             factor(ERSTATUS) + factor(PRSTATUS) + factor(INSREC_PUB) , 
+             data = breast, ties = "breslow" )
+summary(fit3)
+```
+
+Use LRT to test whether the covariate effects are different between the 2 strata
+```{r}
+breastSEX0 <- breast[breast$SEX == 0, ]
+breastSEX1 <- breast[breast$SEX == 1, ]
+fit0 <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(stage) + factor(RAC_RECY) + 
+              factor(BRST_SUB) + factor(MAR_STAT) + MALIGCOUNT + factor(PRIMSITE) + 
+              factor(ERSTATUS) + factor(PRSTATUS) + factor(INSREC_PUB), 
+              data = breastSEX0, ties = "breslow")
+fit1 <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(stage) + factor(RAC_RECY) + 
+              factor(BRST_SUB) + factor(MAR_STAT) + MALIGCOUNT + factor(PRIMSITE) + 
+              factor(ERSTATUS) + factor(PRSTATUS) + factor(INSREC_PUB), 
+              data = breastSEX1, ties = "breslow")
+X2 <- -2*(fit2$loglik[2] - (fit0$loglik[2] + fit1$loglik[2])); X2
+1 - pchisq(X2, 9) #9 degrees of freedom for each covariate
+```
+
+The p-value is <<0.0001, so the assumption of using a stratified model is not met; the covariate effects are not the same between the two strata. So a stratified model is not appropriate.
 
 

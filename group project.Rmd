@@ -77,7 +77,19 @@ breast_ca <- breast_ca %>% filter(BENBORDCOUNT != 99)
 #transform character variables into numeric
 breast_ca$MALIGCOUNT <- as.numeric(breast_ca$MALIGCOUNT)
 breast_ca$BENBORDCOUNT <- as.numeric(breast_ca$BENBORDCOUNT)
+breast_ca$SRV_TIME_MON <- as.numeric(breast_ca$SRV_TIME_MON)
+breast_ca$AGE_DX <- as.numeric(breast_ca$AGE_DX)
 
+```
+
+save an RDS file with the following covariates (for easier access later):
+
+- stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, YR_BRTH, MAR_STAT, MALIGCOUNT, BENBORDCOUNT
+```{r}
+breast_final <- breast_ca %>%
+  select(stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, YR_BRTH,
+         MAR_STAT, MALIGCOUNT, BENBORDCOUNT)
+  
 
 ```
 

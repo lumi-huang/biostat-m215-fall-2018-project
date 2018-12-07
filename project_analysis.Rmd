@@ -15,7 +15,6 @@ library(dplyr)
 library(survival)
 library(ncvreg)
 library(dummies)
-
 ```
 
 Import data
@@ -24,11 +23,7 @@ setwd(".")
 breast_ca <- readRDS(file = "breast_final.rds")
 ```
 
-```{r}
-#convert YR_BRTH to age
-breast_ca$Age <- 2014 - breast_ca$YR_BRTH
-breast_ca <- breast_ca %>% select(-YR_BRTH)
-```
+
 ## Variable selection
 
 variables:
@@ -44,11 +39,28 @@ variables:
 - YR_BRTH = year of birth
 - MALIGCOUNT = Total number of in situ/malignant tumors for patient       
 - BENBORDCOUNT = Total number of benign/borderline tumors for patient
-- Age (year of end of study - YR_BRTH)
+- Age = 2015 - YR_BRTH
+- MAR_STAT = marital status at dx
+- MALIGCOUNT = Total number of in situ/malignant tumors for patient       
+- BENBORDCOUNT = Total number of benign/borderline tumors for patient
+- PRIMSITE = the site in which the primary tumor originated
+     0    Nipple
+     1    Central portion of breast
+     2    Upper-inner quadrant of breast
+     3    Lower-inner quadrant of breast
+     4    Upper-outer quadrant of breast
+     5    Lower-outer quadrant of breast
+     6    Axillary tail of breast
+     7    Overlapping lesion of breast
+     8    Breast, NOS
+- ERSTATUS = ER(Estrogen Receptor) status (0 = positive 1 = negative)
+- PRSTATUS = PR(Progesterone Receptor) status (0 = positive, 1 = negative)
+- INSREC_PUB = INSURANCE RECODE
+    0 = Uninsured
+    1 = Any Medicaid
+    2 = Insured
+    3 = Insured/No specifics
 
-```{r}
-source("Rfunction.R")
-```
 
 The design matrix of predictor values
 ```{r}
@@ -58,9 +70,14 @@ X <- breast_ca %>%
 X <- as.data.frame(X)
 
 #get dummy variables
-X <- dummy.data.frame(X, names = c('stage', 'SEX', 'RAC_RECY', 'MAR_STAT', 'BRST_SUB'))
-X <- select(X, -stage0, -RAC_RECY1, -SEX1, -BRST_SUB1, -MAR_STAT1)
-colnames(X)[colnames(X)=="SEX2"] <- "SEX"
+X <- dummy.data.frame(X, names = c('stage', 'SEX', 'RAC_RECY', 'MAR_STAT', 'BRST_SUB', 'PRIMSITE',
+                                   'ERSTATUS', 'PRSTATUS', 'INSREC_PUB'))
+X <- select(X, -stage0, -RAC_RECY1, -SEX1, -BRST_SUB1, -MAR_STAT1, 
+            -PRIMSITE0, -ERSTATUS0, -PRSTATUS0, -INSREC_PUB0)
+colnames(X)[colnames(X) == "SEX2"] <- "SEX"
+colnames(X)[colnames(X) == "ERSTATUS1"] <- "ERSTATUS"
+colnames(X)[colnames(X) == "PRSTATUS1"] <- "PRSTATUS"
+
 ```
 
 Lasso
@@ -89,5 +106,5 @@ mcp.est <- mcp.fit$beta[, which.min(mcp.bic)]
 Results
 ```{r}
 beta.est <- round(cbind(lasso.est, scad.est, mcp.est), 4)
-beta.est
+print(beta.est)
 ```

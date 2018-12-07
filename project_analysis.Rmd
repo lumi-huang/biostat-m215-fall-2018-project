@@ -1,0 +1,50 @@
+---
+title: "M215 Project Analyses"
+author: "Landi Luo"
+date: "12/6/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(survival)
+library(ncvreg)
+```
+
+Import data
+```{r}
+breast_ca <- readRDS(file = "breast_final.rds")
+```
+
+
+## Variable selection
+
+variables:
+delta: death indicator
+SRV_TIME_MON = Survival months survival time
+SEX = Sex
+RAC_RECY = race
+MAR_STAT = marital status at dx
+BRST_SUB = BREAST SUBTYPE
+MALIGCOUNT = Total number of in situ/malignant tumors for patient       
+BENBORDCOUNT = Total number of benign/borderline tumors for patient
+
+
+```{r}
+source("Rfunction.R")
+```
+
+Lasso
+```{r}
+lasso.fit <- ncvsurv(X, Surv(survtime, delta), penalty = "lasso", nlambda = 25) lasso.bic <- AIC(lasso.fit, k = log(n))
+lasso.est <- lasso.fit$beta[, which.min(lasso.bic)]
+wt <- 1 / abs(coxph(Surv(survtime, delta) ~ X)$coefficient)
+alasso.fit <- ncvsurv(X, Surv(survtime, delta), penalty = "lasso", nlambda = 25, penalty.factor = wt)
+alasso.bic <- AIC(alasso.fit, k = log(n))
+alasso.est <- alasso.fit$beta[, which.min(alasso.bic)]
+```

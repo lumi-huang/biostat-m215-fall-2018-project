@@ -22,6 +22,6 @@ single.cox = function(time, event, covariate, co.type) {
 }
 
 # Example
-co.type = c(rep("C", 4), "N") # "C" means categorical variable / "N" means numeric variable
-single.cox(breast2$SRV_TIME_MON, breast2$STAT_REC, X[,1:5], co.type)
+#co.type = c(rep("C", 4), "N") # "C" means categorical variable / "N" means numeric variable
+#single.cox(breast2$SRV_TIME_MON, breast2$STAT_REC, X[,1:5], co.type)
 

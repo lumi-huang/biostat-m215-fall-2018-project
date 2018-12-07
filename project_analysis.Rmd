@@ -27,22 +27,18 @@ breast_ca <- readRDS(file = "breast_final.rds")
 ## Variable selection
 
 variables:
-
-- stage: cancer stage
 - delta: death indicator
 - SRV_TIME_MON = Survival months survival time
+- stage: cancer stage
 - SEX = Sex
 - RAC_RECY = race
 - MAR_STAT = marital status at dx
 - BRST_SUB = BREAST SUBTYPE
 - AGE_DX = age at diagnosis
-- YR_BRTH = year of birth
 - MALIGCOUNT = Total number of in situ/malignant tumors for patient       
 - BENBORDCOUNT = Total number of benign/borderline tumors for patient
 - Age = 2015 - YR_BRTH
 - MAR_STAT = marital status at dx
-- MALIGCOUNT = Total number of in situ/malignant tumors for patient       
-- BENBORDCOUNT = Total number of benign/borderline tumors for patient
 - PRIMSITE = the site in which the primary tumor originated
      0    Nipple
      1    Central portion of breast
@@ -64,6 +60,9 @@ variables:
 
 The design matrix of predictor values
 ```{r}
+breast_ca <- breast_ca %>% 
+  filter(SRV_TIME_MON != 0)
+  
 X <- breast_ca %>% 
   select(-SRV_TIME_MON, -delta)
 

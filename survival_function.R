@@ -25,13 +25,15 @@ log.rank = function(time, event, data, list){ # list : number of selected column
 
 # Example
 breast_final = data.frame(breast_final)
-log.rank(time = breast_final$SRV_TIME_MON, event = breast_final$delta, data = breast_final, list = c(1,3,4,6,9:15))
+breast_final = breast_final[-c(which(breast_final$SRV_TIME_MON==0)),]
+log.rank(time = breast_final$SRV_TIME_MON, event = breast_final$delta, data = breast_final, list = c(1,3,4,6,12:15))
 
 breast_final2 = breast_final
 breast_final2$Agemean = as.integer(breast_final$Age>mean(breast_final$Age))
 breast_final2$AgeDXmean = as.integer(breast_final$Age>mean(breast_final$AGE_DX))
 
-log.rank(time = breast_final$SRV_TIME_MON, event = breast_final$delta, data = breast_final2, list = c(1,3,4,6,9:17))
+log.rank(time = breast_final$SRV_TIME_MON, event = breast_final$delta, data = breast_final2, list = c(1,3,4,6,12:17))
+
 
 
 ##---------------------KM curve
@@ -63,8 +65,8 @@ legend("bottomleft", c("Stage 0", "Stage 1","Stage 2","Stage 3","Stage 4"), lty 
 
 single.cox = function(time, event, covariate, co.type) {
   
-  p = c()
-  
+  p1 = p2 = p3 = c()
+
   for (i in 1:ncol(covariate)){
     surv.sub = Surv(time=time, event=event, type="right")
     if (co.type[i]=="N") { # continuous variable
@@ -74,15 +76,23 @@ single.cox = function(time, event, covariate, co.type) {
       formul = paste("surv.sub ~ factor(covariate[,", i, "])", sep="")
       fit = coxph(eval(parse(text=formul)), ties = "breslow")
     }
-    p = rbind(p, t(round(summary(fit)$logtest, 3))) # LRT
+    p1 = rbind(p1, t(round(summary(fit)$waldtest, 3))) # Wald Test
+    p2 = rbind(p2, t(round(summary(fit)$sctest, 3))) # Score Test
+    p3 = rbind(p3, t(round(summary(fit)$logtest, 3))) # LRT
   }
   
-  return(p)
+  result = list()
+  result[[1]] = p1 ; result[[2]] = p2; result[[3]] = p3
+  return(result)
   
 }
 
 ##---------------------
 
 # Example
-co.type = c(rep("C", 4), "N") # "C" means categorical variable / "N" means numeric variable
-single.cox(breast2$SRV_TIME_MON, breast2$STAT_REC, X[,1:5], co.type)
+co.type = c(rep("C", 4), rep("N", 2), "C", rep("N", 2), rep("C", 4)) # "C" means categorical variable / "N" means numeric variable
+X = breast_final[,-c(2,5)] # covariate
+result = single.cox(time = breast_final$SRV_TIME_MON, event = breast_final$delta, covariate = X, co.type)
+names(result) = c("Wald Test", "Score Test", "LRT")
+rownames(result[[1]]) = colnames(X); rownames(result[[2]]) = colnames(X); rownames(result[[3]]) = colnames(X)
+result

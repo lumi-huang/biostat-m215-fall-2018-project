@@ -27,10 +27,9 @@ breast_ca <- readRDS(file = "breast_final.rds")
 ## Variable selection
 
 variables:
-
-- stage: cancer stage
 - delta: death indicator
 - SRV_TIME_MON = Survival months survival time
+- stage: cancer stage
 - SEX = Sex
 - RAC_RECY = race
 - MAR_STAT = marital status at dx
@@ -61,6 +60,9 @@ variables:
 
 The design matrix of predictor values
 ```{r}
+breast_ca <- breast_ca %>% 
+  filter(SRV_TIME_MON != 0)
+  
 X <- breast_ca %>% 
   select(-SRV_TIME_MON, -delta)
 

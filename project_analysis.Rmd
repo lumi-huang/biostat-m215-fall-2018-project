@@ -52,15 +52,20 @@ The design matrix of predictor values
 ```{r}
 X <- breast_ca %>% 
   select(-SRV_TIME_MON, -delta)
+
+X <- as.data.frame(X)
+X$stage <- as.factor(X$stage)
 ```
 
 Lasso
 ```{r}
-lasso.fit <- ncvsurv(X, Surv(breast_ca$SRV_TIME_MON, breast_ca$delta), penalty = "lasso") 
+n <- 300
+lasso.fit <- ncvsurv(X, Surv(breast_ca$SRV_TIME_MON, breast_ca$delta), penalty = "lasso", nlambda = 25)
 lasso.bic <- AIC(lasso.fit, k = log(n))
 lasso.est <- lasso.fit$beta[, which.min(lasso.bic)]
-wt <- 1 / abs(coxph(Surv(SRV_TIME_MON, delta) ~ X)$coefficient)
-alasso.fit <- ncvsurv(X, Surv(SRV_TIME_MON, delta), penalty = "lasso", nlambda = 25, penalty.factor = wt)
+wt <- 1 / abs(coxph(Surv(breast_ca$SRV_TIME_MON, breast_ca$delta) ~ X)$coefficient)
+alasso.fit <- ncvsurv(X, Surv(breast_ca$SRV_TIME_MON, breast_ca$delta), penalty = "lasso", 
+                      nlambda = 25, penalty.factor = wt)
 alasso.bic <- AIC(alasso.fit, k = log(n))
 alasso.est <- alasso.fit$beta[, which.min(alasso.bic)]
 ```

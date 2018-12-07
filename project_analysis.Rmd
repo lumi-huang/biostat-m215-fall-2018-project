@@ -56,7 +56,7 @@ X <- breast_ca %>%
 
 Lasso
 ```{r}
-lasso.fit <- ncvsurv(X, Surv(SRV_TIME_MON, delta), penalty = "lasso", nlambda = 25) 
+lasso.fit <- ncvsurv(X, Surv(breast_ca$SRV_TIME_MON, breast_ca$delta), penalty = "lasso") 
 lasso.bic <- AIC(lasso.fit, k = log(n))
 lasso.est <- lasso.fit$beta[, which.min(lasso.bic)]
 wt <- 1 / abs(coxph(Surv(SRV_TIME_MON, delta) ~ X)$coefficient)

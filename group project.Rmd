@@ -9,12 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Clean the seer_breast dataset
 
 ```{r}
 library(tidyverse)
 library(dplyr)
-library(survival)
-library(ncvreg)
 ```
 
 Variables of interest:
@@ -29,16 +28,26 @@ SEX = Sex
 BRST_SUB = BREAST SUBTYPE
 EOD10_PN = positive lymph nodes examined
 MAR_STAT = marital status at dx
+PRIMSITE = Primary Site
+     C50.0    Nipple
+     C50.1    Central portion of breast
+     C50.2    Upper-inner quadrant of breast
+     C50.3    Lower-inner quadrant of breast
+     C50.4    Upper-outer quadrant of breast
+     C50.5    Lower-outer quadrant of breast
+     C50.6    Axillary tail of breast
+     C50.8    Overlapping lesion of breast
+     C50.9    Breast, NOS
 
 ```{r}
 breast <- read_csv(file = "./seer_breast.csv")
 dim(breast)
 breast_ca <- breast %>% 
-  filter(REG == '0000001541'& YEAR_DX == 2014)
+  filter(REG == '0000001541')
 dim(breast_ca)
 
-#drop region and year
-breast_ca <- breast_ca %>% select(-REG, -YEAR_DX)
+#drop region
+breast_ca <- breast_ca %>% select(-REG)
 dim(breast_ca)
 
 #filter the data so that we only look at those who die from breast cancer and those who survive till the end of the study
@@ -79,35 +88,38 @@ breast_ca$MALIGCOUNT <- as.numeric(breast_ca$MALIGCOUNT)
 breast_ca$BENBORDCOUNT <- as.numeric(breast_ca$BENBORDCOUNT)
 breast_ca$SRV_TIME_MON <- as.numeric(breast_ca$SRV_TIME_MON)
 
+breast_ca$AGE_DX <- as.numeric(breast_ca$AGE_DX)
+#convert YR_BRTH to age
+breast_ca$Age <- 2015 - breast_ca$YR_BRTH
+
+
+breast_ca$PRIMSITE
+#convert PRIMSITE to numeric
+breast_ca <- breast_ca %>%
+  mutate(PRIMSITE = recode(PRIMSITE, "C500" = 0, "C501" = 1, "C502" = 2, "C503" = 3, "C504" = 4,
+                           "C505" = 5, "C506" = 6, "C508" = 7, "C509" = 8))
+
+breast_ca <- breast_ca %>%
+  filter(ERSTATUS != 3 & ERSTATUS != 4)
+PRSTATUS
+INSREC_PUB
+
+
+
 ```
 
+save an RDS file with the following covariates (for easier access later):
 
-variables:
-delta: death indicator
-SRV_TIME_MON = Survival months survival time
-SEX = Sex
-RAC_RECY = race
-MAR_STAT = marital status at dx
-BRST_SUB = BREAST SUBTYPE
-MALIGCOUNT = Total number of in situ/malignant tumors for patient       
-BENBORDCOUNT = Total number of benign/borderline tumors for patient
-
+- stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, YR_BRTH, MAR_STAT, MALIGCOUNT, BENBORDCOUNT
 ```{r}
 setwd(".")
 source("Rfunction.R")
 
 single.cox(breast_ca$SRV_TIME_MON, breast_ca$delta, as.data.frame(breast_ca[, c("MALIGCOUNT", "RAC_RECY")]), c("N","C"))
+breast_final <- breast_ca %>%
+  select(stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, YR_BRTH,
+         MAR_STAT, MALIGCOUNT, BENBORDCOUNT)
+saveRDS(breast_final, file = "breast_final.rds")  
 ```
 
 
-
-
-Lasso
-```{r}
-lasso.fit <- ncvsurv(X, Surv(survtime, delta), penalty = "lasso", nlambda = 25) lasso.bic <- AIC(lasso.fit, k = log(n))
-lasso.est <- lasso.fit$beta[, which.min(lasso.bic)]
-wt <- 1 / abs(coxph(Surv(survtime, delta) ~ X)$coefficient)
-alasso.fit <- ncvsurv(X, Surv(survtime, delta), penalty = "lasso", nlambda = 25, penalty.factor = wt)
-alasso.bic <- AIC(alasso.fit, k = log(n))
-alasso.est <- alasso.fit$beta[, which.min(alasso.bic)]
-```

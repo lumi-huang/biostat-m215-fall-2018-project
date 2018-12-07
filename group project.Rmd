@@ -9,12 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## Clean the seer_breast dataset
 
 ```{r}
 library(tidyverse)
 library(dplyr)
-library(survival)
-library(ncvreg)
 ```
 
 Variables of interest:
@@ -93,49 +92,3 @@ saveRDS(breast_final, file = "breast_final.rds")
 ```
 
 
-variables:
-delta: death indicator
-SRV_TIME_MON = Survival months survival time
-SEX = Sex
-RAC_RECY = race
-MAR_STAT = marital status at dx
-BRST_SUB = BREAST SUBTYPE
-MALIGCOUNT = Total number of in situ/malignant tumors for patient       
-BENBORDCOUNT = Total number of benign/borderline tumors for patient
-
-```{r}
-single.cox = function(time, event, covariate, co.type) {
-  
-  p = c()
-  
-  for (i in 1:ncol(covariate)){
-    surv.sub = Surv(time=time, event=event, type="right")
-    if (co.type[i]=="N") { # continuous variable
-      formul = paste("surv.sub ~ covariate[,", i, "]", sep="")
-      fit = coxph(eval(parse(text=formul)), ties = "breslow")
-    } else { # categorical variable
-      formul = paste("surv.sub ~ factor(covariate[,", i, "])", sep="")
-      fit = coxph(eval(parse(text=formul)), ties = "breslow")
-    }
-    p = rbind(p, t(round(summary(fit)$logtest, 3))) # LRT
-  }
-  
-  return(p)
-  
-}
-
-single.cox(breast_ca$SRV_TIME_MON, breast_ca$delta, breast_ca$MALIGCOUNT, N)
-```
-
-
-
-
-Lasso
-```{r}
-lasso.fit <- ncvsurv(X, Surv(survtime, delta), penalty = "lasso", nlambda = 25) lasso.bic <- AIC(lasso.fit, k = log(n))
-lasso.est <- lasso.fit$beta[, which.min(lasso.bic)]
-wt <- 1 / abs(coxph(Surv(survtime, delta) ~ X)$coefficient)
-alasso.fit <- ncvsurv(X, Surv(survtime, delta), penalty = "lasso", nlambda = 25, penalty.factor = wt)
-alasso.bic <- AIC(alasso.fit, k = log(n))
-alasso.est <- alasso.fit$beta[, which.min(alasso.bic)]
-```

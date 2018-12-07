@@ -19,6 +19,9 @@ p_load("tidyverse", "survival", "kableExtra")
 Import data:
 ```{r}
 breast <- readRDS(file = "breast_final.rds")
+
+# delete all survival time = 0
+breast <- subset(breast, SRV_TIME_MON != 0)
 ```
 
 ## Cox Model: All Covariates
@@ -29,7 +32,7 @@ Using the Breslow method of handling ties, we fit a Cox proportional hazards mod
 fit <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(SEX) + factor(stage) + factor(RAC_RECY) + 
              factor(BRST_SUB) + AGE_DX + Age + factor(MAR_STAT) + MALIGCOUNT + 
              BENBORDCOUNT + factor(PRIMSITE) + factor(ERSTATUS) + factor(PRSTATUS) + 
-             factor(INSREC_PUB), data = breast, ties = "breslow" )
+             factor(INSREC_PUB), data = breast, ties = "breslow")
 summary(fit)
 ```
 
@@ -54,16 +57,33 @@ Using variable selection methods (LASSO, SCAD, MCP), we decided the top 9 signif
 - PRIMSITE
 - BRST_SUB
 - MAR_STAT
-- AGE_DX
+- INSREC_PUB
 
 We fit a Cox model with these covariates plus sex:
 ```{r}
 fit2 <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(SEX) + factor(stage) + factor(RAC_RECY) + 
-             factor(BRST_SUB) + AGE_DX + factor(MAR_STAT) + MALIGCOUNT + factor(PRIMSITE) + 
-             factor(ERSTATUS) + factor(PRSTATUS) , data = breast, ties = "breslow" )
+             factor(BRST_SUB) + factor(MAR_STAT) + MALIGCOUNT + factor(PRIMSITE) + 
+             factor(ERSTATUS) + factor(PRSTATUS) + factor(INSREC_PUB) , 
+             data = breast, ties = "breslow" )
 summary(fit2)
 ```
 
+## Test PH Assumption for Sex
 
+To test the proportional hazards assumption for Sex (a fixed-time covariate), we can create a time-dependent covariate $Z_2(t)$, defined as $Z_2(t)=Z_1 \times g(t)$, where g(t) is a known function of the time t. In most applications, we take $g(t)=\ln(t)$. A test of $H_0:\beta_2=0$ is a test of the proportional hazards assumption.
+```{r}
+# convert dataset into a counting process-like dataset
+cut.points <- unique(breast$SRV_TIME_MON[breast$delta == 1])
+breast2 <- survSplit(data = breast, cut = cut.points, end = "SRV_TIME_MON", start = "t0",
+                     event = "delta")
+head(breast2)
+
+# create time-dependent covariate
+breast2$tdc_sex <- breast2$SEX * log(breast2$SRV_TIME_MON)
+
+coxph(Surv(t0, SRV_TIME_MON, delta) ~ SEX + tdc_sex, data = breast2, ties = "breslow")
+```
+
+Using $g(t)=\ln(t)$, the Wald p-value for the test of $H_0:\beta_2=0$ is 0.0091, which is significant at $\alpha=0.05$. Thus, there is evidence that `SEX` covariate has nonproportional hazards.
 
 

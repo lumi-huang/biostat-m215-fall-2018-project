@@ -23,6 +23,7 @@ breast_ca <- readRDS(file = "breast_final.rds")
 ```
 
 ```{r}
+#convert YR_BRTH to age
 breast_ca$Age <- 2014 - breast_ca$YR_BRTH
 breast_ca <- breast_ca %>% select(-YR_BRTH)
 ```
@@ -47,10 +48,14 @@ variables:
 source("Rfunction.R")
 ```
 
-Lasso
+The design matrix of predictor values
 ```{r}
 X <- breast_ca %>% 
   select(-SRV_TIME_MON, -delta)
+```
+
+Lasso
+```{r}
 lasso.fit <- ncvsurv(X, Surv(SRV_TIME_MON, delta), penalty = "lasso", nlambda = 25) 
 lasso.bic <- AIC(lasso.fit, k = log(n))
 lasso.est <- lasso.fit$beta[, which.min(lasso.bic)]

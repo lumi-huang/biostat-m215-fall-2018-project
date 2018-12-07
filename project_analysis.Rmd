@@ -36,7 +36,6 @@ variables:
 - MAR_STAT = marital status at dx
 - BRST_SUB = BREAST SUBTYPE
 - AGE_DX = age at diagnosis
-- YR_BRTH = year of birth
 - MALIGCOUNT = Total number of in situ/malignant tumors for patient       
 - BENBORDCOUNT = Total number of benign/borderline tumors for patient
 - Age = 2015 - YR_BRTH

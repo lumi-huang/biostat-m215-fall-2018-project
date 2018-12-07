@@ -92,17 +92,23 @@ breast_ca$AGE_DX <- as.numeric(breast_ca$AGE_DX)
 #convert YR_BRTH to age
 breast_ca$Age <- 2015 - breast_ca$YR_BRTH
 
-
-breast_ca$PRIMSITE
 #convert PRIMSITE to numeric
 breast_ca <- breast_ca %>%
   mutate(PRIMSITE = recode(PRIMSITE, "C500" = 0, "C501" = 1, "C502" = 2, "C503" = 3, "C504" = 4,
                            "C505" = 5, "C506" = 6, "C508" = 7, "C509" = 8))
-
+#drop NA and borderline
 breast_ca <- breast_ca %>%
   filter(ERSTATUS != 3 & ERSTATUS != 4)
-PRSTATUS
-INSREC_PUB
+breast_ca$ERSTATUS = breast_ca$ERSTATUS - 1
+
+#drop NA and borderline
+breast_ca <- breast_ca %>%
+  filter(PRSTATUS != 3 & PRSTATUS != 4)
+breast_ca$PRSTATUS = breast_ca$PRSTATUS - 1
+
+breast_ca <- breast_ca %>%
+  filter(INSREC_PUB != 5)
+breast_ca$INSREC_PUB <- breast_ca$INSREC_PUB - 1
 
 
 
@@ -110,16 +116,16 @@ INSREC_PUB
 
 save an RDS file with the following covariates (for easier access later):
 
-- stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, YR_BRTH, MAR_STAT, MALIGCOUNT, BENBORDCOUNT
+- stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, Age, MAR_STAT, MALIGCOUNT, BENBORDCOUNT
 ```{r}
 setwd(".")
 source("Rfunction.R")
 
 single.cox(breast_ca$SRV_TIME_MON, breast_ca$delta, as.data.frame(breast_ca[, c("MALIGCOUNT", "RAC_RECY")]), c("N","C"))
 breast_final <- breast_ca %>%
-  select(stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, YR_BRTH,
-         MAR_STAT, MALIGCOUNT, BENBORDCOUNT)
-saveRDS(breast_final, file = "breast_final.rds")  
+  select(stage, delta, RAC_RECY, SEX, SRV_TIME_MON, BRST_SUB, AGE_DX, Age,
+         MAR_STAT, MALIGCOUNT, BENBORDCOUNT, PRIMSITE, ERSTATUS, PRSTATUS, INSREC_PUB)
+saveRDS(breast_final, file = "breast_final.rds")
 ```
 
 

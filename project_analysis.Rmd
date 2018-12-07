@@ -24,11 +24,7 @@ setwd(".")
 breast_ca <- readRDS(file = "breast_final.rds")
 ```
 
-```{r}
-#convert YR_BRTH to age
-breast_ca$Age <- 2014 - breast_ca$YR_BRTH
-breast_ca <- breast_ca %>% select(-YR_BRTH)
-```
+
 ## Variable selection
 
 variables:

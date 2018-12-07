@@ -15,6 +15,7 @@ library(dplyr)
 library(survival)
 library(ncvreg)
 library(dummies)
+
 ```
 
 Import data
@@ -69,4 +70,23 @@ lasso.fit <- ncvsurv(X, Surv(breast_ca$SRV_TIME_MON, breast_ca$delta), penalty =
 lasso.bic <- AIC(lasso.fit, k = log(n))
 lasso.est <- lasso.fit$beta[, which.min(lasso.bic)]
 
+```
+
+SCAD
+```{r}
+scad.fit <- ncvsurv(X, Surv(breast_ca$SRV_TIME_MON, breast_ca$delta), penalty = "SCAD", nlambda = 25) 
+scad.bic <- AIC(scad.fit, k = log(n))
+scad.est <- scad.fit$beta[, which.min(scad.bic)]
+```
+
+MCP
+```{r}
+mcp.fit <- ncvsurv(X, Surv(breast_ca$SRV_TIME_MON, breast_ca$delta), penalty = "MCP", nlambda = 25)
+mcp.bic <- AIC(mcp.fit, k = log(n))
+mcp.est <- mcp.fit$beta[, which.min(mcp.bic)]
+```
+
+Results
+```{r}
+beta.est <- round(cbind(lasso.est, scad.est, mcp.est), 4)
 ```

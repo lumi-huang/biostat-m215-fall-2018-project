@@ -21,4 +21,28 @@ Import data:
 breast <- readRDS(file = "breast_final.rds")
 ```
 
+## Cox Model
+
+Using the Breslow method of handling ties, we fit a Cox proportional hazards model to the data including all 13 covariates: race, sex, stage, breast subtype, age dx, age, marital status, benign tumor count, malignant tumor count, primary site, pr status, er status, insurance status.
+
+```{r}
+fit <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(stage) + factor(RAC_RECY) + 
+             factor(SEX) + factor(BRST_SUB) + AGE_DX + Age + factor(MAR_STAT) + 
+             MALIGCOUNT + BENBORDCOUNT + factor(PRIMSITE) + factor(ERSTATUS) +
+             factor(PRSTATUS) + factor(INSREC_PUB), 
+             data = breast, ties = "breslow" )
+
+#summary(fit)
+
+```
+
+## ANOVA Table
+
+We constructed an Analysis of Variance table to summarize estimates of the risk coefficients and the results of the one degree of freedom tests for each covariate in the model:
+```{r}
+anova_table <- data.frame(summary(fit)$coefficients)
+kable(anova_table, "latex", booktabs = T,
+      col.names = c("Coefficient", "Exp. Coeff.", "Std. Error", "Z-Score", "P-Value")) %>%
+  kable_styling(latex_options = c("striped", "HOLD_position"))
+```
 

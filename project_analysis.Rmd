@@ -40,8 +40,6 @@ variables:
 - BENBORDCOUNT = Total number of benign/borderline tumors for patient
 - Age = 2015 - YR_BRTH
 - MAR_STAT = marital status at dx
-- MALIGCOUNT = Total number of in situ/malignant tumors for patient       
-- BENBORDCOUNT = Total number of benign/borderline tumors for patient
 - PRIMSITE = the site in which the primary tumor originated
      0    Nipple
      1    Central portion of breast

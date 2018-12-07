@@ -4,32 +4,17 @@
 single.cox = function(time, event, covariate, co.type) {
   
   p = c()
-
-  if ( is.null(ncol(covariate)) == TRUE ) {
+  
+  for (i in 1:ncol(covariate)){
     surv.sub = Surv(time=time, event=event, type="right")
     if (co.type[i]=="N") { # continuous variable
-      formul = paste("surv.sub ~ covariate", sep="")
+      formul = paste("surv.sub ~ covariate[,", i, "]", sep="")
       fit = coxph(eval(parse(text=formul)), ties = "breslow")
     } else { # categorical variable
-      formul = paste("surv.sub ~ factor(covariate)", sep="")
+      formul = paste("surv.sub ~ factor(covariate[,", i, "])", sep="")
       fit = coxph(eval(parse(text=formul)), ties = "breslow")
     }
-    p = round(summary(fit)$logtest, 3) # LRT
-
-  } else {
-    
-    for (i in 1:ncol(covariate)){
-      surv.sub = Surv(time=time, event=event, type="right")
-      if (co.type[i]=="N") { # continuous variable
-        formul = paste("surv.sub ~ covariate[,", i, "]", sep="")
-        fit = coxph(eval(parse(text=formul)), ties = "breslow")
-      } else { # categorical variable
-        formul = paste("surv.sub ~ factor(covariate[,", i, "])", sep="")
-        fit = coxph(eval(parse(text=formul)), ties = "breslow")
-      }
-      p = rbind(p, t(round(summary(fit)$logtest, 3))) # LRT
-    }
-    
+    p = rbind(p, t(round(summary(fit)$logtest, 3))) # LRT
   }
   
   return(p)
@@ -38,6 +23,5 @@ single.cox = function(time, event, covariate, co.type) {
 
 # Example
 co.type = c(rep("C", 4), "N") # "C" means categorical variable / "N" means numeric variable
-single.cox(breast2$SRV_TIME_MON, breast2$STAT_REC, breast2[,1:5], co.type)
-single.cox(breast2$SRV_TIME_MON, breast2$STAT_REC, age, "N")
+single.cox(breast2$SRV_TIME_MON, breast2$STAT_REC, X[,1:5], co.type)
 

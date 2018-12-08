@@ -74,7 +74,7 @@ summary(fit2)
 ```{r}
 anova_table2 <- data.frame(summary(fit2)$coefficients)
 kable(anova_table2, "latex", booktabs = TRUE,
-      col.names = c("Coefficient", "Exp. Coeff.", "Std. Error", "Z-Score", "P-Value")) %>%
+      col.names = c("Coefficient", "Relative Risk", "Std. Error", "Z-Score", "P-Value")) %>%
   kable_styling(latex_options = "striped")
 
 ```

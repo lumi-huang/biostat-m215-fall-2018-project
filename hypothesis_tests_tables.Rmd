@@ -62,4 +62,53 @@ kable(logrank_table2, "latex", booktabs = TRUE) %>%
   kable_styling(latex_options = "striped")
 ```
 
+## LRT, Score, Wald Tests
+
+
+```{r}
+single.cox = function(time, event, covariate, co.type) {
+  
+  p1 = p2 = p3 = c()
+
+  for (i in 1:ncol(covariate)){
+    surv.sub = Surv(time=time, event=event, type="right")
+    if (co.type[i]=="N") { # continuous variable
+      formul = paste("surv.sub ~ covariate[,", i, "]", sep="")
+      fit = coxph(eval(parse(text=formul)), ties = "breslow")
+    } else { # categorical variable
+      formul = paste("surv.sub ~ factor(covariate[,", i, "])", sep="")
+      fit = coxph(eval(parse(text=formul)), ties = "breslow")
+    }
+    p1 = rbind(p1, t(round(summary(fit)$waldtest, 3))) # Wald Test
+    p2 = rbind(p2, t(round(summary(fit)$sctest, 3))) # Score Test
+    p3 = rbind(p3, t(round(summary(fit)$logtest, 3))) # LRT
+  }
+  
+  result = list()
+  result[[1]] = p1 ; result[[2]] = p2; result[[3]] = p3
+  return(result)
+  
+}
+
+##---------------------
+
+# Example
+co.type = c(rep("C", 4), rep("N", 2), "C", rep("N", 2), rep("C", 4)) # "C" means categorical variable / "N" means numeric variable
+X = breast[,-c(2,5)] # covariate
+result = single.cox(time = breast$SRV_TIME_MON, event = breast$delta, covariate = X, co.type)
+names(result) = c("Wald Test", "Score Test", "LRT")
+rownames(result[[1]]) = colnames(X); rownames(result[[2]]) = colnames(X); rownames(result[[3]]) = colnames(X)
+wald <- data.frame(result$`Wald Test`)
+score <- data.frame(result$`Score Test`)
+lrt <- data.frame(result$LRT)
+
+kable(wald, "latex", booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped")
+
+kable(score, "latex", booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped")
+
+kable(lrt, "latex", booktabs = TRUE) %>%
+  kable_styling(latex_options = "striped")
+```
 

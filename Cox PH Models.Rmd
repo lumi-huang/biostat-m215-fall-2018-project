@@ -2,7 +2,7 @@
 title: "Cox PH Models"
 author: "Landi Luo"
 date: "12/7/2018"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -44,9 +44,9 @@ summary(fit)
 We constructed an Analysis of Variance table to summarize estimates of the risk coefficients and the results of the one degree of freedom tests for each covariate in the model:
 ```{r}
 anova_table <- data.frame(summary(fit)$coefficients)
-kable(anova_table, "latex", booktabs = T,
+kable(anova_table, caption = "Table ____: ANOVA Table",
       col.names = c("Coefficient", "Exp. Coeff.", "Std. Error", "Z-Score", "P-Value")) %>%
-  kable_styling(latex_options = c("striped", "HOLD_position"))
+  kable_styling("striped")
 ```
 
 ## Cox Model: Top 9 Significant Variables
@@ -118,5 +118,7 @@ X2 <- -2*(fit2$loglik[2] - (fit0$loglik[2] + fit1$loglik[2])); X2
 ```
 
 The p-value is <<0.0001, so the assumption of using a stratified model is not met; the covariate effects are not the same between the two strata. So a stratified model is not appropriate.
+
+
 
 

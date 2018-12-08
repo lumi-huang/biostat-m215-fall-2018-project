@@ -94,7 +94,8 @@ single.cox = function(time, event, covariate, co.type) {
 
 # Example
 co.type = c(rep("C", 4), rep("N", 2), "C", rep("N", 2), rep("C", 4)) # "C" means categorical variable / "N" means numeric variable
-X = breast[,-c(2,5)] # covariate
+X = breast[,c("SEX", "stage", "RAC_RECY", "BRST_SUB", "MAR_STAT", "MALIGCOUNT", "PRIMSITE",
+              "ERSTATUS", "PRSTATUS", "INSREC_PUB")] # covariates
 result = single.cox(time = breast$SRV_TIME_MON, event = breast$delta, covariate = X, co.type)
 names(result) = c("Wald Test", "Score Test", "LRT")
 rownames(result[[1]]) = colnames(X); rownames(result[[2]]) = colnames(X); rownames(result[[3]]) = colnames(X)

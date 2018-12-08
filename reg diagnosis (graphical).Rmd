@@ -1,0 +1,63 @@
+---
+title: "graphical diagnostic"
+author: "Lumi Huang"
+date: "12/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(survival)
+library(zoo)
+library(dummies)
+```
+
+import data
+```{r}
+setwd(".")
+breast_ca <- readRDS(file = "breast_final.rds")
+```
+
+remove patients who died before study started
+```{r}
+breast_ca <- breast_ca %>% 
+  filter(SRV_TIME_MON != 0)
+breast$SEX <- ifelse(breast$SEX == 1, 0, 1)
+```
+
+
+
+Cox-snell
+sex, stage, ER status, PR status, total number of in situ/malignant tumors for patient, race, the site in which the primary tumor originated, breast subtype, marital status, and insurance.
+```{r}
+fit <- coxph(Surv(SRV_TIME_MON, delta) ~ factor(SEX) + factor(stage) + factor(ERSTATUS) + factor(PRSTATUS) + 
+               MALIGCOUNT + factor(RAC_RECY) + factor(PRIMSITE) +factor(BRST_SUB) + factor(MAR_STAT) + 
+               factor(INSREC_PUB), data = breast_ca, ties = "breslow")
+
+#get cox-snell
+mg.residual <- resid(fit, type = "martingale")
+cs.residual <- breast_ca$delta - mg.residual
+
+#graphical plot
+fit.cs <- survfit(Surv(cs.residual, breast_ca$delta) ~ 1) #get KME
+H.cs <- cumsum(fit.cs$n.event/fit.cs$n.risk)
+plot(fit.cs$time, H.cs, type='s', col='blue',
+     main = 'Cox-Snell Residual Plot',
+     xlab = 'Residual', ylab = 'Nelson-Aalen Cum. Hazard')
+abline(0, 1, col="red", lty = 2)
+```
+
+martingale residual for time
+```{r}
+plot(mg.residual ~ breast_ca$SRV_TIME_MON,
+     xlab = "Survival Time (Months)",
+     ylab = "Martingale Residuals",
+    main='Martingale Residuals vs. Survival Time', pch = 19)
+lines(lowess(breast_ca$SRV_TIME_MON, mg.residual), col = 'red')
+```
+
